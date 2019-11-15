@@ -22,8 +22,7 @@ import (
         "os/exec"
         "strings"
 
-        cpuTopo "k8s.io/kubernetes/pkg/kubelet/cm/cpumanager/topology"
-	"k8s.io/kubernetes/pkg/kubelet/cm/cpuset"
+       	"k8s.io/kubernetes/pkg/kubelet/cm/cpuset"
 )
 
 const devCpFile = "/var/lib/kubelet/device-plugins/kubelet_internal_checkpoint"
@@ -165,13 +164,41 @@ func (st *SystemTopology) getAllPodInfo() error {
         return nil
 }
 
+// GetNUMANodeInfo uses sysfs to return a map of NUMANode id to the list of
+// CPUs associated with that NUMANode.
 func (st *SystemTopology) getNUMATopology() error {
-        numaNodeInfo, err := cpuTopo.GetNUMANodeInfo()
+        nodelist, err := ioutil.ReadFile("/sys/devices/system/node/online")
         if err != nil {
                 return err
         }
-        st.systemCpuTopology = numaNodeInfo
-        return nil
+
+        // Parse the nodelist into a set of Node IDs
+        nodes, err := cpuset.Parse(strings.TrimSpace(string(nodelist)))
+        if err != nil {
+                return err
+        }
+
+        info := make(map[int]cpuset.CPUSet)
+
+        // For each node...
+        for _, node := range nodes.ToSlice() {
+                // Read the 'cpulist' of the NUMA node from sysfs.
+                path := fmt.Sprintf("/sys/devices/system/node/node%d/cpulist", node)
+                cpulist, err := ioutil.ReadFile(path)
+                if err != nil {
+                        return err
+                }
+
+                // Convert the 'cpulist' into a set of CPUs.
+                cpus, err := cpuset.Parse(strings.TrimSpace(string(cpulist)))
+                if err != nil {
+                        return err
+                }
+
+                info[node] = cpus
+        }
+	st.systemCpuTopology = info
+	return nil
 }
 
 func (st *SystemTopology) parseRegisteredDevices() error {
