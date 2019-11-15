@@ -24,32 +24,7 @@ import (
 
         cpuTopo "k8s.io/kubernetes/pkg/kubelet/cm/cpumanager/topology"
 	"k8s.io/kubernetes/pkg/kubelet/cm/cpuset"
-	"github.com/spf13/cobra"
 )
-
-// topoCmd represents the topo command
-var topoCmd = &cobra.Command{
-	Use:   "topo",
-	Long: `kubectl plugin for displaying CPU and device topology for the current Kubernetes node.
-
-  Examples:
-  # Display topology of CPU and device resources for the current node:
-  kubectl topo node
-	
-  # Display topology of assigned CPUs and devices for 
-  all pods on current node consuming CPU and/or devices:
-  kubectl topo pod
-
-  # Display topology of assigned CPUs and devices for a specified pod:
-  kubectl topo pod <pod-name>
-
-  Note: Only pods on the current node, consuming CPU and/or device
-  resources will be considered.`,
-
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("topo called")
-	},
-}
 
 const devCpFile = "/var/lib/kubelet/device-plugins/kubelet_internal_checkpoint"
 
@@ -79,11 +54,6 @@ type DeviceInfo struct {
         idInfo map[string][]int64
 }
 
-func init() {
-	rootCmd.AddCommand(topoCmd)
-}
-
-
 func newSystemTopology() SystemTopology {
         devicesInfo := make([]DeviceInfo, 0)
         podCons := make([]PodInfo, 0)
@@ -96,7 +66,7 @@ func newSystemTopology() SystemTopology {
 }
 
 func (st *SystemTopology) printNodeTopology() {
-        fmt.Println("System Device Topology:")
+        fmt.Println("Node Device Topology:")
         for _, device := range st.systemDevices {
                 fmt.Println("  Name:\t", device.name)
                 for id, nodes := range device.idInfo {
@@ -104,7 +74,7 @@ func (st *SystemTopology) printNodeTopology() {
                         fmt.Println("    NUMA Nodes:\t\t", nodes)
                 }
         }
-        fmt.Println("\nSystem CPU/NUMA Topology:")
+        fmt.Println("\nNode CPU/NUMA Topology:")
         for numaNode, cpus := range st.systemCpuTopology {
                 fmt.Printf("  NUMA Node %d:\n", numaNode)
                 fmt.Println("    CPUs:", cpus)
@@ -112,7 +82,7 @@ func (st *SystemTopology) printNodeTopology() {
 }
 
 func (st *SystemTopology) printAllPodsTopology() {
-        fmt.Println("Pods on current node coonsuming CPU and/or device resources:\n")
+        fmt.Println("Pods on current node consuming CPU and/or device resources:\n")
         for _, pod := range st.pods {
                 printPodTopology(pod)
         }

@@ -29,10 +29,10 @@ var podCmd = &cobra.Command{
   Examples:
   # List and display topology of assigned CPUs and devices for 
   all pods on current node consuming CPU and/or devices:
-  kubectl topo pod
+  kubectl topology pod
 
   # Display topology of assigned CPUs and devices for a specified pod:
-  kubectl topo pod <pod-name>
+  kubectl topology pod <pod-name>
 
   Note: Only pods on the current node, consuming CPU and/or device
   resources will be considered.`,
@@ -48,20 +48,13 @@ var podCmd = &cobra.Command{
 			st.validPodName(args[0])
 			return
 		}else {
-			fmt.Println("Too many arguments\n\nSee \"kubectl topo --help pod\"")
+			fmt.Println("Too many arguments\n\nSee \"kubectl topology --help pod\"")
 		}
 	},
 }
 
 func init() {
-	topoCmd.AddCommand(podCmd)
-}
-
-func getPods() {
-	st := newSystemTopology()
-	st.getNUMATopology()
-	st.parseRegisteredDevices()
-	st.getAllPodInfo()
+	rootCmd.AddCommand(podCmd)
 }
 
 func (st *SystemTopology)validPodName(podName string){

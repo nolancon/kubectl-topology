@@ -25,15 +25,16 @@ var nodeCmd = &cobra.Command{
 	Short: "Display topology of CPU and device resources for the current node.",
 	Long: `Display topology of CPU and device resources for the current node:
 
-  kubectl topo node
+  kubectl topology node
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		node()
+		
 	},
 }
 
 func init() {
-	topoCmd.AddCommand(nodeCmd)
+	rootCmd.AddCommand(nodeCmd)
 }
 
 func node() {
