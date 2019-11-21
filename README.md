@@ -5,7 +5,7 @@ This is a `kubectl` plugin to view the topology of CPU and device resources on t
 - `mkdir nolancon && cd nolancon`
 - `git clone https://github.com/nolancon/node-topology && cd node-topology`
 - `go get ./...`
-- `go build -o /usr/bin/kubectl-topology`
+- `go build -ldflags "-X github.com/nolancon/node-topology/cmd.GOPATH=$GOPATH" -o /usr/bin/kubectl-topology`
 
 ## Usage
 - Display topology of CPU and device resources for the current node:
