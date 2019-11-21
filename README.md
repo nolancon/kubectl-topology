@@ -1,6 +1,7 @@
 # node-topology
 This is a `kubectl` plugin to view the topology of CPU and device resources on the current node. `kubectl topology` uses the local CPU Manager and Device Manager checkpoint files to access resource information. Therefore this is a node level application and the plugin is limited to the node on which you are logged in.
 ## Install
+Ensure your Go environment and $GOPATH is configured correctly
 - `cd $GOPATH/src/github.com`
 - `mkdir nolancon && cd nolancon`
 - `git clone https://github.com/nolancon/node-topology && cd node-topology`
@@ -23,3 +24,5 @@ This is a `kubectl` plugin to view the topology of CPU and device resources on t
 
   
 ## Configuration
+The paths for CPU Manager and Device Manager checkpoint files are located in `config.yaml`.
+By default, these paths are set to `/var/lib/kubelet/cpu_manager_state` and `/var/lib/kubelet/device-plugins/kubelet_internal_checkpoint` respectively. If these paths differ on your machine, you need to set the proper paths in `config.yaml` and rebuild the plugin.    
