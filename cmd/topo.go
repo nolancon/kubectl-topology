@@ -26,6 +26,8 @@ import (
 	"k8s.io/kubernetes/pkg/kubelet/cm/cpuset"
 )
 
+var GOPATH string
+
 type SystemTopology struct {
 	deviceCheckpointFile string
 	cpuCheckpointFile    string
@@ -73,7 +75,7 @@ func newSystemTopology() SystemTopology {
 }
 
 func readConfig() (string, string, error) {
-	fileName := "config.yaml"
+	fileName := fmt.Sprintf("%s/src/github.com/nolancon/node-topology/config.yaml", GOPATH)
 	configFile, err := ioutil.ReadFile(fileName)
 	if err != nil {
 		return "", "", err
