@@ -20,10 +20,10 @@ import (
 	"fmt"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
-	"os/exec"
-	"strings"
-
 	"k8s.io/kubernetes/pkg/kubelet/cm/cpuset"
+	"os/exec"
+	"strconv"
+	"strings"
 )
 
 var GOPATH string
@@ -189,6 +189,32 @@ func (st *SystemTopology) getAllPodInfo() error {
 	return nil
 }
 
+func (st *SystemTopology) parseRegisteredDevices() error {
+	// Get device info from device checkpoint file
+	deviceCheckpoint, err := ioutil.ReadFile(st.deviceCheckpointFile)
+	if err != nil {
+		return err
+	}
+	var registeredDevices map[string]map[string]map[string][]string
+	json.Unmarshal(deviceCheckpoint, &registeredDevices)
+
+	for registeredDevice, deviceIDs := range registeredDevices["Data"]["RegisteredDevices"] {
+		sysDev := DeviceInfo{}
+		idInfo := make(map[string][]int64)
+		for _, id := range deviceIDs {
+			nodes, err := st.getDeviceNUMATopology(id)
+			if err != nil {
+				return err
+			}
+			idInfo[id] = nodes
+			sysDev.idInfo = idInfo
+		}
+		sysDev.name = registeredDevice
+		st.systemDevices = append(st.systemDevices, sysDev)
+	}
+	return nil
+}
+
 // GetNUMANodeInfo uses sysfs to return a map of NUMANode id to the list of
 // CPUs associated with that NUMANode.
 func (st *SystemTopology) getNUMATopology() error {
@@ -226,31 +252,29 @@ func (st *SystemTopology) getNUMATopology() error {
 	return nil
 }
 
-func (st *SystemTopology) parseRegisteredDevices() error {
-	// Get device info from device checkpoint file
-	deviceCheckpoint, err := ioutil.ReadFile(st.deviceCheckpointFile)
+func (st *SystemTopology) getDeviceNUMATopology(id string) ([]int64, error) {
+	numaNodes := make([]int64, 0)
+	deviceIDFiles, err := ioutil.ReadDir("/sys/bus/pci/devices/")
 	if err != nil {
-		return err
+		return nil, err
 	}
-	var registeredDevices map[string]map[string]map[string][]string
-	var deviceNUMANodes map[string]map[string]map[string][]int64
-	json.Unmarshal(deviceCheckpoint, &registeredDevices)
-	json.Unmarshal(deviceCheckpoint, &deviceNUMANodes)
-	for registeredDevice, deviceIDs := range registeredDevices["Data"]["RegisteredDevices"] {
-		sysDev := DeviceInfo{}
-		idInfo := make(map[string][]int64)
-		for _, id := range deviceIDs {
-			for devID, numaNodes := range deviceNUMANodes["Data"]["DeviceNUMANodes"] {
-				if id == devID {
-					idInfo[devID] = numaNodes
-					sysDev.idInfo = idInfo
-				}
+	for _, deviceIDFile := range deviceIDFiles {
+		deviceIDFileStr := deviceIDFile.Name()
+		if strings.HasSuffix(deviceIDFileStr, id) {
+			path := fmt.Sprintf("/sys/bus/pci/devices/%s/numa_node", deviceIDFileStr)
+			numaNode, err := ioutil.ReadFile(path)
+			if err != nil {
+				return nil, err
 			}
+			str := strings.TrimSpace(string(numaNode))
+			n, err := strconv.ParseInt(str, 10, 64)
+			if err != nil {
+				return nil, err
+			}
+			numaNodes = append(numaNodes, n)
 		}
-		sysDev.name = registeredDevice
-		st.systemDevices = append(st.systemDevices, sysDev)
 	}
-	return nil
+	return numaNodes, nil
 }
 
 func (st *SystemTopology) parseCpuCheckpoint(imageId string) (map[int]cpuset.CPUSet, error) {
