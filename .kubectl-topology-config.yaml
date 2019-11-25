@@ -1,0 +1,5 @@
+# Config file to be located at $HOME/.kubectl-topology-config.yaml
+# The file locations listed are standard for a k8s node, however should they
+# differ for your particular node, the correct file locations should be specified here 
+deviceCheckpointFile: "/var/lib/kubelet/device-plugins/kubelet_internal_checkpoint"
+cpuCheckpointFile:    "/var/lib/kubelet/cpu_manager_state"

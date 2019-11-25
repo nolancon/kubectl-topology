@@ -1,2 +1,0 @@
-deviceCheckpointFile: "/var/lib/kubelet/device-plugins/kubelet_internal_checkpoint"
-cpuCheckpointFile:    "/var/lib/kubelet/cpu_manager_state"

@@ -21,12 +21,11 @@ import (
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"k8s.io/kubernetes/pkg/kubelet/cm/cpuset"
+	"os"
 	"os/exec"
 	"strconv"
 	"strings"
 )
-
-var GOPATH string
 
 type SystemTopology struct {
 	deviceCheckpointFile string
@@ -75,15 +74,20 @@ func newSystemTopology() SystemTopology {
 }
 
 func readConfig() (string, string, error) {
-	fileName := fmt.Sprintf("%s/src/github.com/nolancon/kubectl-topology/config.yaml", GOPATH)
+	defaultCPU := "/var/lib/kubelet/cpu_manager_state"
+	defaultDevice := "/var/lib/kubelet/device-plugins/kubelet_internal_checkpoint"
+	HOME := os.Getenv("HOME")
+	fileName := fmt.Sprintf("%s/.kubectl-topology-config.yaml", HOME)
 	configFile, err := ioutil.ReadFile(fileName)
 	if err != nil {
-		return "", "", err
+		fmt.Println("Using default checkpoint file locations")
+		return defaultDevice, defaultCPU, err
 	}
 	cfg := make(map[string]string)
 	err = yaml.Unmarshal(configFile, &cfg)
 	if err != nil {
-		return "", "", err
+		fmt.Println("Using default checkpoint file locations")
+		return defaultDevice, defaultCPU, err
 	}
 
 	return cfg["deviceCheckpointFile"], cfg["cpuCheckpointFile"], nil
