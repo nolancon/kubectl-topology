@@ -2,7 +2,7 @@
 This is a `kubectl` plugin to view the topology of CPU and device resources on the current node. `kubectl topology` uses the local CPU Manager and Device Manager checkpoint files to access resource information. Therefore this is a node level application and the plugin is limited to the node on which you are logged in.
   
 ## Configuration
-The paths for CPU Manager and Device Manager checkpoint files are located in `.kubectl-topology-config.yaml`.
+The paths for CPU Manager and Device Manager checkpoint files are located in `kubectl-topology-config.yaml`.
 By default, these paths are set to `/var/lib/kubelet/cpu_manager_state` and `/var/lib/kubelet/device-plugins/kubelet_internal_checkpoint` respectively. If these paths differ on your Kubernetes node, you need to set the proper paths and save the file to `$HOME/.kubectl-topology-config.yaml`.    
 
 ## Installation
