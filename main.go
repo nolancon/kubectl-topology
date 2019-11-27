@@ -15,8 +15,8 @@ limitations under the License.
 */
 package main
 
-import "github.com/nolancon/node-topology/cmd"
+import "github.com/nolancon/kubectl-topology/cmd"
 
 func main() {
-  cmd.Execute()
+	cmd.Execute()
 }

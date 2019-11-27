@@ -75,7 +75,7 @@ func newSystemTopology() SystemTopology {
 }
 
 func readConfig() (string, string, error) {
-	fileName := fmt.Sprintf("%s/src/github.com/nolancon/node-topology/config.yaml", GOPATH)
+	fileName := fmt.Sprintf("%s/src/github.com/nolancon/kubectl-topology/config.yaml", GOPATH)
 	configFile, err := ioutil.ReadFile(fileName)
 	if err != nil {
 		return "", "", err

@@ -1,12 +1,12 @@
-# node-topology
+# kubectl-topology
 This is a `kubectl` plugin to view the topology of CPU and device resources on the current node. `kubectl topology` uses the local CPU Manager and Device Manager checkpoint files to access resource information. Therefore this is a node level application and the plugin is limited to the node on which you are logged in.
 ## Install
 Ensure your Go environment and $GOPATH is configured correctly
 - `cd $GOPATH/src/github.com`
 - `mkdir nolancon && cd nolancon`
-- `git clone https://github.com/nolancon/node-topology && cd node-topology`
+- `git clone https://github.com/nolancon/kubectl-topology && cd kubectl-topology`
 - `go get ./...`
-- `go build -ldflags "-X github.com/nolancon/node-topology/cmd.GOPATH=$GOPATH" -o /usr/bin/kubectl-topology`
+- `go build -ldflags "-X github.com/nolancon/kubectl-topology/cmd.GOPATH=$GOPATH" -o /usr/bin/kubectl-topology`
 
 ## Usage
 - Display topology of CPU and device resources for the current node:
