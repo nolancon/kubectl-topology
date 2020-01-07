@@ -139,8 +139,8 @@ func printPodTopology(pod PodInfo) {
 	}
 }
 
+// Get pod container IDs and container names from kubectl get pod
 func (st *SystemTopology) getAllPodInfo() error {
-	// Get Container ID and Container name from kubectl describe pod
 	getCmd := exec.Command("sudo", "kubectl", "get", "pod", "-o", "json")
 	jsonGetPod, err := getCmd.CombinedOutput()
 	if err != nil {
@@ -193,8 +193,8 @@ func (st *SystemTopology) getAllPodInfo() error {
 	return nil
 }
 
+// Parse registered device info from device checkpoint file
 func (st *SystemTopology) parseRegisteredDevices() error {
-	// Get device info from device checkpoint file
 	deviceCheckpoint, err := ioutil.ReadFile(st.deviceCheckpointFile)
 	if err != nil {
 		return err
@@ -256,6 +256,7 @@ func (st *SystemTopology) getNUMATopology() error {
 	return nil
 }
 
+// getDeviceNUMATopology uses sysfs to get the NUMA node of a device
 func (st *SystemTopology) getDeviceNUMATopology(id string) ([]int64, error) {
 	numaNodes := make([]int64, 0)
 	deviceIDFiles, err := ioutil.ReadDir("/sys/bus/pci/devices/")
@@ -281,8 +282,8 @@ func (st *SystemTopology) getDeviceNUMATopology(id string) ([]int64, error) {
 	return numaNodes, nil
 }
 
+// Parse container CPUs from CPU checkpoint file
 func (st *SystemTopology) parseCpuCheckpoint(imageId string) (map[int]cpuset.CPUSet, error) {
-	// Read CPU Checkpoint file to get Conainer CPUs
 	cpuCheckpoint, err := ioutil.ReadFile(st.cpuCheckpointFile)
 	if err != nil {
 		return nil, err
@@ -312,8 +313,8 @@ func (st *SystemTopology) parseCpuCheckpoint(imageId string) (map[int]cpuset.CPU
 	return containerCPUInfo, nil
 }
 
+// Parse container devices from device checkpoint file
 func (st *SystemTopology) parseContainerDevices(imageName string, podUID string) ([]DeviceInfo, error) {
-	// Read Container Devices
 	deviceCheckpoint, err := ioutil.ReadFile(st.deviceCheckpointFile)
 	if err != nil {
 		return nil, err
