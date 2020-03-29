@@ -141,7 +141,7 @@ func printPodTopology(pod PodInfo) {
 
 // Get pod container IDs and container names from kubectl get pod
 func (st *SystemTopology) getAllPodInfo() error {
-	getCmd := exec.Command("sudo", "kubectl", "get", "pod", "-o", "json")
+	getCmd := exec.Command("kubectl", "get", "pod", "-o", "json")
 	jsonGetPod, err := getCmd.CombinedOutput()
 	if err != nil {
 		return err
@@ -166,11 +166,11 @@ func (st *SystemTopology) getAllPodInfo() error {
 			devices := make(map[string][]DeviceInfo)
 			for _, conStatus := range containerStatuses["items"][i]["status"]["containerStatuses"] {
 				conInfo := ContainerInfo{}
-				imageID := strings.TrimPrefix(conStatus["containerID"], "docker://")
+				imageID := conStatus["containerID"]
 				imageName := conStatus["name"]
 				conInfo.imageName = imageName
 				conInfo.imageID = imageID
-				conInfo.cpus, err = st.parseCpuCheckpoint(imageID)
+				conInfo.cpus, err = st.parseCpuCheckpoint(imageName, podUid)
 				if err != nil {
 					return err
 				}
@@ -283,7 +283,7 @@ func (st *SystemTopology) getDeviceNUMATopology(id string) ([]int64, error) {
 }
 
 // Parse container CPUs from CPU checkpoint file
-func (st *SystemTopology) parseCpuCheckpoint(imageId string) (map[int]cpuset.CPUSet, error) {
+/*func (st *SystemTopology) parseCpuCheckpoint(imageId string) (map[int]cpuset.CPUSet, error) {
 	cpuCheckpoint, err := ioutil.ReadFile(st.cpuCheckpointFile)
 	if err != nil {
 		return nil, err
@@ -294,6 +294,41 @@ func (st *SystemTopology) parseCpuCheckpoint(imageId string) (map[int]cpuset.CPU
 	for cpuChkimageID, cpus := range result["entries"] {
 		if cpuChkimageID == imageId {
 			cpuSetStr = cpus
+		}
+	}
+	cpuSet := cpuset.MustParse(cpuSetStr)
+	cpuSetSlice := cpuSet.ToSlice()
+	cpuSliceMap := make(map[int][]int)
+	for _, cpu := range cpuSetSlice {
+		for numaNode, sysCpuset := range st.systemCpuTopology {
+			if sysCpuset.Contains(cpu) {
+				cpuSliceMap[numaNode] = append(cpuSliceMap[numaNode], cpu)
+			}
+		}
+	}
+	containerCPUInfo := make(map[int]cpuset.CPUSet)
+	for numaNode, cpuSlice := range cpuSliceMap {
+		containerCPUInfo[numaNode] = cpuset.NewCPUSet(cpuSlice...)
+	}
+	return containerCPUInfo, nil
+}
+*/
+
+func (st *SystemTopology) parseCpuCheckpoint(imageName string, podUID string) (map[int]cpuset.CPUSet, error) {
+	cpuCheckpoint, err := ioutil.ReadFile(st.cpuCheckpointFile)
+	if err != nil {
+		return nil, err
+	}
+	var cpuSetStr string
+	var result map[string]map[string]map[string]string
+	json.Unmarshal(cpuCheckpoint, &result)
+	for entryPodUID, container := range result["entries"] {
+		if entryPodUID == podUID {
+			for entryContainerName, cpus := range container {
+				if entryContainerName == imageName {
+					cpuSetStr = cpus
+				}
+			}
 		}
 	}
 	cpuSet := cpuset.MustParse(cpuSetStr)
