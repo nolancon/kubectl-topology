@@ -7,10 +7,9 @@ By default, these paths are set to `/var/lib/kubelet/cpu_manager_state` and `/va
 
 ## Installation
 Ensure your Go environment and $GOPATH is configured correctly
-- `cd $GOPATH/src/github.com`
-- `mkdir nolancon && cd nolancon`
-- `git clone https://github.com/nolancon/kubectl-topology && cd kubectl-topology`
-- `go get ./...`
+- `go get github.com/nolancon/kubectl-topology`
+- `cd $GOPATH/src/github.com/nolancon/kubectl-topology`
+- `cp kubectl-topology-config.yaml $HOME/.kubectl-topology-config.yaml`
 - `go build -o /usr/bin/kubectl-topology`
 
 ## Usage
